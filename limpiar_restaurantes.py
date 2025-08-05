@@ -10,22 +10,20 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
     # Crear columna con nombre de restaurante y quitar prefijo
     df['Restaurante'] = df['Cliente'].astype(str).str.replace(r'^Cliente:\s*\d+\s*', '', regex=True).str.strip()
 
-    # Normalizar país y restaurante
+   
+ # Normalizar país y restaurante
     df['País'] = df['País'].astype(str).str.title()
     df['Restaurante'] = df['Restaurante'].str.title()
-
-    # Convertir precios y propinas a números (remover símbolos y separadores)
+# Convertir precios y propinas a números (remover símbolos y separadores)
     for col in ['Precio', 'Propina']:
-        df[col] = pd.to_numeric(
-            df[col]
-            .astype(str)
-            .str.replace('[^0-9,.-]', '', regex=True)
-            .str.replace('.', '', regex=True)
-            .str.replace(',', '.', regex=True),
-            errors='coerce'
-        )
+        df[col] = df[col].astype(str) \
+                         .str.replace(r'[^\d,.-]', '', regex=True) \
+                         .str.replace(r'\.(?=\d{3}(?:\.|,|$))', '', regex=True) \
+                         .str.replace(',', '.') \
+                         .replace(r'^\s*$', pd.NA, regex=True) \
+                         .astype(float)
 
-    # Estandarizar fecha
+ # Estandarizar fecha
     df['Fecha'] = pd.to_datetime(df['Fecha'], dayfirst=True, errors='coerce')
 
     # Calificación numérica contando estrellas
