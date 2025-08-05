@@ -6,22 +6,24 @@ salida = 'restaurantes_limpios.xlsx'
 
 def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
     """Realiza la limpieza básica del DataFrame original."""
+
     # Crear columna con nombre de restaurante y quitar prefijo
-    df['Restaurante'] = df['Cliente'].str.replace(r'^Cliente:\s*\d+\s*', '', regex=True).str.strip()
+    df['Restaurante'] = df['Cliente'].astype(str).str.replace(r'^Cliente:\s*\d+\s*', '', regex=True).str.strip()
 
     # Normalizar país y restaurante
-    df['País'] = df['País'].str.title()
+    df['País'] = df['País'].astype(str).str.title()
     df['Restaurante'] = df['Restaurante'].str.title()
 
     # Convertir precios y propinas a números (remover símbolos y separadores)
     for col in ['Precio', 'Propina']:
-        df[col] = (df[col]
-                   .astype(str)
-                   .str.replace('[^0-9,.-]', '', regex=True)
-                   .str.replace('.', '', regex=True)
-                   .str.replace(',', '.', regex=True)
-                   .replace('', pd.NA)
-                   .astype(float))
+        df[col] = pd.to_numeric(
+            df[col]
+            .astype(str)
+            .str.replace('[^0-9,.-]', '', regex=True)
+            .str.replace('.', '', regex=True)
+            .str.replace(',', '.', regex=True),
+            errors='coerce'
+        )
 
     # Estandarizar fecha
     df['Fecha'] = pd.to_datetime(df['Fecha'], dayfirst=True, errors='coerce')
@@ -37,7 +39,6 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
                 'Método de pago', 'Propina', 'Calificación', 'Tiempo espera (min)']
     df_limpio = df[columnas].copy()
     return df_limpio
-
 def generar_analisis(df: pd.DataFrame) -> pd.DataFrame:
     """Genera hoja de análisis con KPIs solicitados."""
     plato_mas_vendido = df['Plato'].mode().iloc[0]
