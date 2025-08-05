@@ -20,6 +20,7 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
                    .str.replace('[^0-9,.-]', '', regex=True)
                    .str.replace('.', '', regex=True)
                    .str.replace(',', '.', regex=True)
+                   .replace('', pd.NA)
                    .astype(float))
 
     # Estandarizar fecha
